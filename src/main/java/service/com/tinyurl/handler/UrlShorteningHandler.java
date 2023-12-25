@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import service.com.tinyurl.TinyUrlResponse;
 import service.com.tinyurl.ctrl.UrlShorteningCtrl;
 
+import java.security.NoSuchAlgorithmException;
+
 @Log
 @RestController
 public class UrlShorteningHandler {
@@ -22,7 +24,7 @@ public class UrlShorteningHandler {
     @PostMapping(value = "/{originalUrl}",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<?> shortening(@PathVariable("originalUrl") String originalUrl) {
+    ResponseEntity<?> shortening(@PathVariable("originalUrl") String originalUrl) throws NoSuchAlgorithmException {
 
         log.info("Url shortening request start");
 

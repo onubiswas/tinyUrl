@@ -6,6 +6,10 @@ import service.com.tinyurl.TinyUrlResponse;
 import service.com.tinyurl.dao.UrlEntityRepository;
 import service.com.tinyurl.model.UrlMapping;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,7 +19,7 @@ public class UrlShorteningCtrl {
     @Autowired
     UrlEntityRepository repository;
 
-    public TinyUrlResponse run(String originalUrl) {
+    public TinyUrlResponse run(String originalUrl) throws NoSuchAlgorithmException {
 
         // TODO : Validate the originalUrl
 
@@ -28,6 +32,10 @@ public class UrlShorteningCtrl {
 
         if (!res.isPresent()) {
             String generateShortenedUrl = generateUrl(originalUrl);
+            if(generateShortenedUrl == "Error") {
+                response.setMessage("Error while generating shortened url");
+                return response;
+            }
 
             UrlMapping umapping = new UrlMapping();
             umapping.setShortenedUrl(generateShortenedUrl);
@@ -52,9 +60,23 @@ public class UrlShorteningCtrl {
         return response;
     }
 
-    private String generateUrl(String originalUrl) {
+    private String generateUrl(String originalUrl) throws NoSuchAlgorithmException {
+        try {
+            // Create a SHA-256 hash of the original URL
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(originalUrl.getBytes(StandardCharsets.UTF_8));
 
-        return "xyz";
+            // Convert the hash bytes to a Base64-encoded string
+            String base64Hash = Base64.getUrlEncoder().encodeToString(hashBytes);
+
+            // Return a substring of the base64Hash as the shortened URL
+            return base64Hash.substring(0, 8); // Adjust length as needed
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            // Handle the exception or return a default value
+            return "Error";
+        }
     }
 
     public class UrlRequest {
