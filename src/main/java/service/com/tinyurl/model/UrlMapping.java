@@ -1,13 +1,18 @@
 package service.com.tinyurl.model;
 
-import jdk.jfr.DataAmount;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
+
+@Entity
+@Table(name = "url_mapping")
 public class UrlMapping {
-    String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer id;
     String originalUrl;
     String shortenedUrl;
-    String cratedAt;
+    String createdAt;
     String expiredAt;
 }
