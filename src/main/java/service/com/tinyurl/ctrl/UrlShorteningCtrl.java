@@ -1,5 +1,7 @@
 package service.com.tinyurl.ctrl;
 
+import lombok.Data;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import service.com.tinyurl.TinyUrlResponse;
@@ -14,24 +16,29 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
+@Log
 public class UrlShorteningCtrl {
 
     @Autowired
     UrlEntityRepository repository;
 
-    public TinyUrlResponse run(String originalUrl) throws NoSuchAlgorithmException {
+    public TinyUrlResponse run(UrlRequest body) throws NoSuchAlgorithmException {
+        TinyUrlResponse response = new TinyUrlResponse();
 
         // TODO : Validate the originalUrl
-
-        TinyUrlResponse response = new TinyUrlResponse();
+        if(body.getUrl() == "") {
+            log.info("original url validation failed, original url is null");
+            response.setMessage("originalUrl is null");
+            return response;
+        }
 
         UrlMapping urlMapping = new UrlMapping();
 
         // fetch from db for shortened url
-        Optional<UrlMapping> res = repository.findByOriginalUrl(originalUrl);
+        Optional<UrlMapping> res = repository.findByOriginalUrl(body.getUrl());
 
         if (!res.isPresent()) {
-            String generateShortenedUrl = generateUrl(originalUrl);
+            String generateShortenedUrl = generateUrl(body.getUrl());
             if(generateShortenedUrl == "Error") {
                 response.setMessage("Error while generating shortened url");
                 return response;
@@ -39,7 +46,7 @@ public class UrlShorteningCtrl {
 
             UrlMapping umapping = new UrlMapping();
             umapping.setShortenedUrl(generateShortenedUrl);
-            umapping.setOriginalUrl(originalUrl);
+            umapping.setOriginalUrl(body.getUrl());
             umapping.setCreatedAt(String.valueOf(System.currentTimeMillis()));
             umapping.setExpiredAt(String.valueOf(System.currentTimeMillis() + 30 * 24 * 60 * 60 * 1000));
 
@@ -79,7 +86,8 @@ public class UrlShorteningCtrl {
         }
     }
 
-    public class UrlRequest {
+    @Data
+    public static class UrlRequest {
         String url;
     }
 }
